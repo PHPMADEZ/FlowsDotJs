@@ -555,49 +555,46 @@
     };
 
 
-    //save cards as json
     function saveCardsAsJSON() {
-      let cards = document.getElementsByClassName('list-group-items');
-      let sections = [];
+      let cards = document.getElementsByClassName('card');
+      let json = {};
+      json.sections = [];
       for (let i = 0; i < cards.length; i++) {
         let card = cards[i];
+        let title = card.getElementsByTagName('h2')[0].innerHTML;
+        let content = card.getElementsByTagName('p')[0].innerHTML;
         let section = {};
-        section.section = card.firstChild.innerHTML;
-        let content = card.lastChild.innerHTML;
-        let lines = content.split('<br>');
-        lines.forEach(line => {
-          if (line !== '') {
-            let key = line.split(' : ')[0].replace('<b>', '').replace('</b>', '');
-            let value = line.split(' : ')[1];
-            if (key === 'key') {
-              let object = {};
-              object.key = value;
-              section[key] = object;
-            } else if (key === 'values') {
-              let array = [];
-              array.push(value);
-              section[key] = array;
+        section.section = title;
+        let contentArray = content.split('<br>');
+        contentArray.forEach(item => {
+          if (item.includes(':')) {
+            let key = item.split(':')[0].replace('<b>', '').replace('</b>', '');
+            let value = item.split(':')[1].replace('<b>', '').replace('</b>', '');
+            if (value.includes(',')) {
+              let values = value.split(',');
+              section[key] = [];
+              values.forEach(v => {
+                section[key].push(v);
+              });
             } else {
               section[key] = value;
             }
           }
-
         });
-        sections.push(section);
+        json.sections.push(section);
       }
+   
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
+      var downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "flow.json");
+      document.body.appendChild(downloadAnchorNode); 
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
 
-      let json = JSON.stringify({ sections: sections });
-      let blob = new Blob([json], { type: 'application/json' });
-      let a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'flow.json';
-      a.click();
     }
 
-    
-    
 
-    //
 
 
 
